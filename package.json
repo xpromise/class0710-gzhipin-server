@@ -1,0 +1,16 @@
+{
+  "name": "gzhipin-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "blueimp-md5": "^2.10.0",
+    "express": "^4.16.4",
+    "mongoose": "^5.3.8"
+  }
+}
