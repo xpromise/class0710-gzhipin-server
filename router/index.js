@@ -18,6 +18,8 @@ router.use(express.urlencoded({extended: true}));
 //解析cookie
 router.use(cookieParser());
 
+const filter = {__v: 0, password: 0};
+
 //登录
 router.post('/login', async (req, res) => {
   //1. 收集用户提交信息
@@ -33,7 +35,7 @@ router.post('/login', async (req, res) => {
   }
   //3. 去数据库中查找是否有指定用户和密码
   try {
-    const data = await Users.findOne({username, password: md5(password)});
+    const data = await Users.findOne({username, password: md5(password)}, filter);
   
     if (data) {
       //说明用户找到了，登录成功，返回成功的响应
@@ -41,11 +43,7 @@ router.post('/login', async (req, res) => {
       res.cookie('userid', data.id, {maxAge: 1000 * 3600 * 24 * 7});
       res.json({
         "code": 0,
-        "data": {
-          "_id": data.id,
-          "username": data.username,
-          "type": data.type
-        }
+        data
       })
     } else {
       //说明用户名或密码错误，返回失败的响应
@@ -164,6 +162,7 @@ router.post('/register',async (req, res) => {
 router.post('/update', (req, res) => {
   // 从请求的cookie得到userid
   const userid = req.cookies.userid
+  console.log(userid);
   // 如果不存在, 直接返回一个提示信息
   if (!userid) {
     return res.json({code: 1, msg: '请先登陆'});
@@ -171,7 +170,7 @@ router.post('/update', (req, res) => {
   // 存在, 根据userid更新对应的user文档数据
   // 得到提交的用户数据
   const user = req.body // 没有_id
-  Users.findByIdAndUpdate({_id: userid}, user)
+  Users.findByIdAndUpdate({_id: userid}, {$set: user})
     .then(oldUser => {
       if (!oldUser) {
         //更新数据失败
@@ -183,6 +182,7 @@ router.post('/update', (req, res) => {
         //更新数据成功
         // 准备一个返回的user数据对象
         const {_id, username, type} = oldUser;
+        console.log(oldUser);
         //此对象有所有的数据
         const data = Object.assign({_id, username, type}, user)
         // 返回成功的响应
@@ -191,6 +191,31 @@ router.post('/update', (req, res) => {
     })
     .catch(error => {
       // console.error('登陆异常', error)
+      res.send({code: 3, msg: '网络不稳定，请重新试试~'})
+    })
+})
+
+// 获取用户信息的路由(根据cookie中的userid)
+router.get('/user', (req, res) => {
+  // 从请求的cookie得到userid
+  const userid = req.cookies.userid
+  // 如果不存在, 直接返回一个提示信息
+  if (!userid) {
+    return res.send({code: 1, msg: '请先登陆'})
+  }
+  // 根据userid查询对应的user
+  Users.findOne({_id: userid}, filter)
+    .then(user => {
+      if (user) {
+        res.send({code: 0, data: user})
+      } else {
+        // 通知浏览器删除userid cookie
+        res.clearCookie('userid')
+        res.send({code: 1, msg: '请先登陆'})
+      }
+    })
+    .catch(error => {
+      console.error('获取用户异常', error)
       res.send({code: 3, msg: '网络不稳定，请重新试试~'})
     })
 })
