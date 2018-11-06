@@ -16,7 +16,7 @@ module.exports = function (server) {
       //定义chat_id
       const chat_id = [data.from, data.to].sort().join('-');
       //将客户端发送的消息保存在数据库中
-      const result = await Messages.create({from: data.from, to: data.to, content: data.content, chat_id, create_time: Date.now()})
+      const result = await Messages.create({from: data.from, to: data.to, content: data.content, chat_id})
       // 向所有客户端发送消息(名称, 数据)
       io.emit('receiveMsg', {from: result.from, to: result.to, content: result.content, chat_id: result.chat_id, create_time: result.create_time, read: result.read});
       // 向当前连接上客户端发送消息(名称, 数据)

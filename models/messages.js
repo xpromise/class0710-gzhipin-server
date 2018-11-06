@@ -18,7 +18,7 @@ const messagesSchema = new Schema({
   },
   create_time: {
     type: Date,
-    default: Date.now()
+    default: Date.now
   },
   chat_id: {
     type: String,

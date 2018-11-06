@@ -9,12 +9,13 @@ const app = express();
 /*
   全局安装： npm i nodemon -g
  */
+app.use(express.static('public'));
 
 const http = require('http');
 const server = http.createServer(app);
 require('./socketIO')(server);
 //处理聊天消息
-server.listen(5000, () => {
+server.listen(6000, () => {
   console.log('服务器启动成功, 请访问: http://localhost:5000')
 });
 
